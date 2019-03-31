@@ -1,1224 +1,193 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 1,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import numpy as np\n",
-    "import pandas as pd\n",
-    "import matplotlib.pyplot as plt\n",
-    "from sklearn import linear_model\n",
-    "from sklearn.model_selection import train_test_split\n",
-    "from sklearn.linear_model import LinearRegression\n",
-    "from sklearn.feature_selection import f_regression\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 2,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>0</th>\n",
-       "      <th>1</th>\n",
-       "      <th>2</th>\n",
-       "      <th>3</th>\n",
-       "      <th>4</th>\n",
-       "      <th>5</th>\n",
-       "      <th>6</th>\n",
-       "      <th>7</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20170102</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>21.2</td>\n",
-       "      <td>23.2</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>25.8</td>\n",
-       "      <td>1</td>\n",
-       "      <td>24483</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>20170103</td>\n",
-       "      <td>21.6</td>\n",
-       "      <td>22.2</td>\n",
-       "      <td>25.5</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>24.2</td>\n",
-       "      <td>1</td>\n",
-       "      <td>28131</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>20170104</td>\n",
-       "      <td>26.2</td>\n",
-       "      <td>24.6</td>\n",
-       "      <td>24.9</td>\n",
-       "      <td>24.8</td>\n",
-       "      <td>25.4</td>\n",
-       "      <td>0</td>\n",
-       "      <td>28485</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>20170105</td>\n",
-       "      <td>25.6</td>\n",
-       "      <td>22.6</td>\n",
-       "      <td>26.0</td>\n",
-       "      <td>25.0</td>\n",
-       "      <td>26.4</td>\n",
-       "      <td>0</td>\n",
-       "      <td>28336</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>20170106</td>\n",
-       "      <td>23.9</td>\n",
-       "      <td>20.5</td>\n",
-       "      <td>24.4</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>28.3</td>\n",
-       "      <td>0</td>\n",
-       "      <td>28002</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "          0     1     2     3     4     5  6      7\n",
-       "0  20170102  25.7  21.2  23.2  24.7  25.8  1  24483\n",
-       "1  20170103  21.6  22.2  25.5  24.7  24.2  1  28131\n",
-       "2  20170104  26.2  24.6  24.9  24.8  25.4  0  28485\n",
-       "3  20170105  25.6  22.6  26.0  25.0  26.4  0  28336\n",
-       "4  20170106  23.9  20.5  24.4  25.7  28.3  0  28002"
-      ]
-     },
-     "execution_count": 2,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df = pd.read_csv(\"data/training1.csv\" , delim_whitespace=True, header=None)\n",
-    "df.head()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 3,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "features =[\n",
-    "    \"date\",\n",
-    "    \"TaipeiTemp\",\n",
-    "    \"TaoyuanTemp\",\n",
-    "    \"TaichungTemp\",\n",
-    "    \"TainanTemp\",\n",
-    "    \"KaohsingTemp\",\n",
-    "    \"vacation\"\n",
-    "]\n",
-    "\n",
-    "target= \"peak_load(MW)\""
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 4,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>0</th>\n",
-       "      <th>1</th>\n",
-       "      <th>2</th>\n",
-       "      <th>3</th>\n",
-       "      <th>4</th>\n",
-       "      <th>5</th>\n",
-       "      <th>6</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20170102</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>21.2</td>\n",
-       "      <td>23.2</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>25.8</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>20170103</td>\n",
-       "      <td>21.6</td>\n",
-       "      <td>22.2</td>\n",
-       "      <td>25.5</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>24.2</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>20170104</td>\n",
-       "      <td>26.2</td>\n",
-       "      <td>24.6</td>\n",
-       "      <td>24.9</td>\n",
-       "      <td>24.8</td>\n",
-       "      <td>25.4</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>20170105</td>\n",
-       "      <td>25.6</td>\n",
-       "      <td>22.6</td>\n",
-       "      <td>26.0</td>\n",
-       "      <td>25.0</td>\n",
-       "      <td>26.4</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>20170106</td>\n",
-       "      <td>23.9</td>\n",
-       "      <td>20.5</td>\n",
-       "      <td>24.4</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>28.3</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "          0     1     2     3     4     5  6\n",
-       "0  20170102  25.7  21.2  23.2  24.7  25.8  1\n",
-       "1  20170103  21.6  22.2  25.5  24.7  24.2  1\n",
-       "2  20170104  26.2  24.6  24.9  24.8  25.4  0\n",
-       "3  20170105  25.6  22.6  26.0  25.0  26.4  0\n",
-       "4  20170106  23.9  20.5  24.4  25.7  28.3  0"
-      ]
-     },
-     "execution_count": 4,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "targets=df[7]\n",
-    "df.drop(columns=[7], inplace=True)\n",
-    "df.head()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 5,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>date</th>\n",
-       "      <th>TaipeiTemp</th>\n",
-       "      <th>TaoyuanTemp</th>\n",
-       "      <th>TaichungTemp</th>\n",
-       "      <th>TainanTemp</th>\n",
-       "      <th>KaohsingTemp</th>\n",
-       "      <th>vacation</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20170102</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>21.2</td>\n",
-       "      <td>23.2</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>25.8</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>20170103</td>\n",
-       "      <td>21.6</td>\n",
-       "      <td>22.2</td>\n",
-       "      <td>25.5</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>24.2</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>20170104</td>\n",
-       "      <td>26.2</td>\n",
-       "      <td>24.6</td>\n",
-       "      <td>24.9</td>\n",
-       "      <td>24.8</td>\n",
-       "      <td>25.4</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>20170105</td>\n",
-       "      <td>25.6</td>\n",
-       "      <td>22.6</td>\n",
-       "      <td>26.0</td>\n",
-       "      <td>25.0</td>\n",
-       "      <td>26.4</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>20170106</td>\n",
-       "      <td>23.9</td>\n",
-       "      <td>20.5</td>\n",
-       "      <td>24.4</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>28.3</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "       date  TaipeiTemp  TaoyuanTemp  TaichungTemp  TainanTemp  KaohsingTemp  \\\n",
-       "0  20170102        25.7         21.2          23.2        24.7          25.8   \n",
-       "1  20170103        21.6         22.2          25.5        24.7          24.2   \n",
-       "2  20170104        26.2         24.6          24.9        24.8          25.4   \n",
-       "3  20170105        25.6         22.6          26.0        25.0          26.4   \n",
-       "4  20170106        23.9         20.5          24.4        25.7          28.3   \n",
-       "\n",
-       "   vacation  \n",
-       "0         1  \n",
-       "1         1  \n",
-       "2         0  \n",
-       "3         0  \n",
-       "4         0  "
-      ]
-     },
-     "execution_count": 5,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df.columns=features\n",
-    "df.head()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 6,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>TaipeiTemp</th>\n",
-       "      <th>TaoyuanTemp</th>\n",
-       "      <th>TaichungTemp</th>\n",
-       "      <th>TainanTemp</th>\n",
-       "      <th>KaohsingTemp</th>\n",
-       "      <th>vacation</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>25.7</td>\n",
-       "      <td>21.2</td>\n",
-       "      <td>23.2</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>25.8</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>21.6</td>\n",
-       "      <td>22.2</td>\n",
-       "      <td>25.5</td>\n",
-       "      <td>24.7</td>\n",
-       "      <td>24.2</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>26.2</td>\n",
-       "      <td>24.6</td>\n",
-       "      <td>24.9</td>\n",
-       "      <td>24.8</td>\n",
-       "      <td>25.4</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>25.6</td>\n",
-       "      <td>22.6</td>\n",
-       "      <td>26.0</td>\n",
-       "      <td>25.0</td>\n",
-       "      <td>26.4</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>23.9</td>\n",
-       "      <td>20.5</td>\n",
-       "      <td>24.4</td>\n",
-       "      <td>25.7</td>\n",
-       "      <td>28.3</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "   TaipeiTemp  TaoyuanTemp  TaichungTemp  TainanTemp  KaohsingTemp  vacation\n",
-       "0        25.7         21.2          23.2        24.7          25.8         1\n",
-       "1        21.6         22.2          25.5        24.7          24.2         1\n",
-       "2        26.2         24.6          24.9        24.8          25.4         0\n",
-       "3        25.6         22.6          26.0        25.0          26.4         0\n",
-       "4        23.9         20.5          24.4        25.7          28.3         0"
-      ]
-     },
-     "execution_count": 6,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df.drop(columns=[\"date\"], inplace=True)\n",
-    "df.head()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 7,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "features_vectors=df.values"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 8,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "X_train, X_test, Y_train, Y_test= train_test_split(features_vectors, targets ,test_size=0.1,random_state=1)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 9,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Slope: -27.659547759317032\n",
-      "Intercept: 18316.64857593887\n",
-      "Socre Training:  0.8314931934847327\n",
-      "Socre Testing:  0.8303594944057315\n"
-     ]
-    }
-   ],
-   "source": [
-    "reg=linear_model.LinearRegression()\n",
-    "reg.fit(X_train, Y_train)\n",
-    "print(\"Slope:\", reg.coef_[0])\n",
-    "print(\"Intercept:\", reg.intercept_)\n",
-    "print(\"Socre Training: \", reg.score(X_train, Y_train))\n",
-    "print(\"Socre Testing: \", reg.score(X_test, Y_test))"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 10,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "F values: [628.15927399 805.36025023 438.07873785 453.64340538 483.07023849\n",
-      " 366.18687176]\n",
-      "p values: [1.08128923e-099 7.49900534e-119 4.53107946e-076 3.79187064e-078\n",
-      " 5.33109800e-082 4.31931056e-066]\n"
-     ]
-    }
-   ],
-   "source": [
-    "F_values, p_values =f_regression(X_train ,Y_train)\n",
-    "print(\"F values:\", F_values)\n",
-    "print(\"p values:\", p_values)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 11,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "[('TaipeiTemp', 628.1592739923091),\n",
-       " ('TaoyuanTemp', 805.3602502319154),\n",
-       " ('TaichungTemp', 438.07873785311216),\n",
-       " ('TainanTemp', 453.64340537956485),\n",
-       " ('KaohsingTemp', 483.070238491956),\n",
-       " ('vacation', 366.1868717593776)]"
-      ]
-     },
-     "execution_count": 11,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "features_and_f_values= list(zip(df.columns,F_values))\n",
-    "features_and_f_values"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 12,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "features_num_seq = range(1, len(features))\n",
-    "result_test_scores = list()\n",
-    "result_training_scores = list()\n",
-    "for num in features_num_seq:\n",
-    "    num_of_choosen_features = num\n",
-    "    selected_features = [\n",
-    "        feature_and_f_value[0]\n",
-    "        for feature_and_f_value in features_and_f_values[:num_of_choosen_features]\n",
-    "    ]\n",
-    "    \n",
-    "    features_vectors = df[selected_features].values\n",
-    "    X_train, X_test, Y_train, Y_test = train_test_split(features_vectors, targets, test_size=0.1, random_state=1)\n",
-    "    \n",
-    "    reg = linear_model.LinearRegression()\n",
-    "    reg.fit(X_train, Y_train)\n",
-    "    \n",
-    "    result_training_scores.append(reg.score(X_train, Y_train))\n",
-    "    result_test_scores.append(reg.score(X_test, Y_test))"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 13,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "image/png": "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\n",
-      "text/plain": [
-       "<Figure size 432x288 with 1 Axes>"
-      ]
-     },
-     "metadata": {
-      "needs_background": "light"
-     },
-     "output_type": "display_data"
-    }
-   ],
-   "source": [
-    "plt.plot(features_num_seq, result_training_scores, marker='o', label='train')\n",
-    "plt.plot(features_num_seq, result_test_scores, marker='*', label='test')\n",
-    "\n",
-    "plt.xticks(features_num_seq)\n",
-    "plt.legend()\n",
-    "plt.xlabel('Number of features used')\n",
-    "plt.ylabel('Score')\n",
-    "plt.show()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 14,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>0</th>\n",
-       "      <th>1</th>\n",
-       "      <th>2</th>\n",
-       "      <th>3</th>\n",
-       "      <th>4</th>\n",
-       "      <th>5</th>\n",
-       "      <th>6</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20190402</td>\n",
-       "      <td>20</td>\n",
-       "      <td>21</td>\n",
-       "      <td>25</td>\n",
-       "      <td>24</td>\n",
-       "      <td>25</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>20190403</td>\n",
-       "      <td>21</td>\n",
-       "      <td>22</td>\n",
-       "      <td>25</td>\n",
-       "      <td>26</td>\n",
-       "      <td>27</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>20190404</td>\n",
-       "      <td>23</td>\n",
-       "      <td>23</td>\n",
-       "      <td>24</td>\n",
-       "      <td>26</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>20190405</td>\n",
-       "      <td>23</td>\n",
-       "      <td>23</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>20190406</td>\n",
-       "      <td>25</td>\n",
-       "      <td>25</td>\n",
-       "      <td>28</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "          0   1   2   3   4   5  6\n",
-       "0  20190402  20  21  25  24  25  0\n",
-       "1  20190403  21  22  25  26  27  0\n",
-       "2  20190404  23  23  24  26  27  1\n",
-       "3  20190405  23  23  27  27  27  1\n",
-       "4  20190406  25  25  28  27  27  1"
-      ]
-     },
-     "execution_count": 14,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df_test=pd.read_csv(\"data/prediction.csv\", delim_whitespace=True, header=None)\n",
-    "df_test.head()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 15,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "0    20190402\n",
-       "1    20190403\n",
-       "2    20190404\n",
-       "3    20190405\n",
-       "4    20190406\n",
-       "5    20190407\n",
-       "6    20190408\n",
-       "Name: date, dtype: int64"
-      ]
-     },
-     "execution_count": 15,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df_test.columns=features\n",
-    "df_test.head()\n",
-    "Date=df_test[\"date\"]\n",
-    "Date\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 16,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>TaipeiTemp</th>\n",
-       "      <th>TaoyuanTemp</th>\n",
-       "      <th>TaichungTemp</th>\n",
-       "      <th>TainanTemp</th>\n",
-       "      <th>KaohsingTemp</th>\n",
-       "      <th>vacation</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20</td>\n",
-       "      <td>21</td>\n",
-       "      <td>25</td>\n",
-       "      <td>24</td>\n",
-       "      <td>25</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>21</td>\n",
-       "      <td>22</td>\n",
-       "      <td>25</td>\n",
-       "      <td>26</td>\n",
-       "      <td>27</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>23</td>\n",
-       "      <td>23</td>\n",
-       "      <td>24</td>\n",
-       "      <td>26</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>23</td>\n",
-       "      <td>23</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>25</td>\n",
-       "      <td>25</td>\n",
-       "      <td>28</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "   TaipeiTemp  TaoyuanTemp  TaichungTemp  TainanTemp  KaohsingTemp  vacation\n",
-       "0          20           21            25          24            25         0\n",
-       "1          21           22            25          26            27         0\n",
-       "2          23           23            24          26            27         1\n",
-       "3          23           23            27          27            27         1\n",
-       "4          25           25            28          27            27         1"
-      ]
-     },
-     "execution_count": 16,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df_test.drop(columns=[\"date\"],inplace=True)\n",
-    "df_test.head()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 17,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "(7,)\n",
-      "(7, 6)\n"
-     ]
-    }
-   ],
-   "source": [
-    "x=df_test.values\n",
-    "y_te_pred=reg.predict(x)\n",
-    "print(y_te_pred.shape)\n",
-    "print(x.shape)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 18,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>TaipeiTemp</th>\n",
-       "      <th>TaoyuanTemp</th>\n",
-       "      <th>TaichungTemp</th>\n",
-       "      <th>TainanTemp</th>\n",
-       "      <th>KaohsingTemp</th>\n",
-       "      <th>vacation</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20</td>\n",
-       "      <td>21</td>\n",
-       "      <td>25</td>\n",
-       "      <td>24</td>\n",
-       "      <td>25</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>21</td>\n",
-       "      <td>22</td>\n",
-       "      <td>25</td>\n",
-       "      <td>26</td>\n",
-       "      <td>27</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>23</td>\n",
-       "      <td>23</td>\n",
-       "      <td>24</td>\n",
-       "      <td>26</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>23</td>\n",
-       "      <td>23</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>25</td>\n",
-       "      <td>25</td>\n",
-       "      <td>28</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>5</th>\n",
-       "      <td>24</td>\n",
-       "      <td>24</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>1</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>6</th>\n",
-       "      <td>24</td>\n",
-       "      <td>24</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>27</td>\n",
-       "      <td>0</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "   TaipeiTemp  TaoyuanTemp  TaichungTemp  TainanTemp  KaohsingTemp  vacation\n",
-       "0          20           21            25          24            25         0\n",
-       "1          21           22            25          26            27         0\n",
-       "2          23           23            24          26            27         1\n",
-       "3          23           23            27          27            27         1\n",
-       "4          25           25            28          27            27         1\n",
-       "5          24           24            27          27            27         1\n",
-       "6          24           24            27          27            27         0"
-      ]
-     },
-     "execution_count": 18,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "df_test"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 19,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>peak_load(MW)</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>29120.377125</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>30006.424873</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>26322.046475</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>25660.612372</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>26409.734375</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>5</th>\n",
-       "      <td>26122.430857</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>6</th>\n",
-       "      <td>30415.483159</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "   peak_load(MW)\n",
-       "0   29120.377125\n",
-       "1   30006.424873\n",
-       "2   26322.046475\n",
-       "3   25660.612372\n",
-       "4   26409.734375\n",
-       "5   26122.430857\n",
-       "6   30415.483159"
-      ]
-     },
-     "execution_count": 19,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "prediction = pd.DataFrame(y_te_pred, columns=[\"peak_load(MW)\"])\n",
-    "prediction\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 20,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>date</th>\n",
-       "      <th>peak_load(MW)</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>20190402</td>\n",
-       "      <td>29120.377125</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>20190403</td>\n",
-       "      <td>30006.424873</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>20190404</td>\n",
-       "      <td>26322.046475</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>20190405</td>\n",
-       "      <td>25660.612372</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>20190406</td>\n",
-       "      <td>26409.734375</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>5</th>\n",
-       "      <td>20190407</td>\n",
-       "      <td>26122.430857</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>6</th>\n",
-       "      <td>20190408</td>\n",
-       "      <td>30415.483159</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "       date  peak_load(MW)\n",
-       "0  20190402   29120.377125\n",
-       "1  20190403   30006.424873\n",
-       "2  20190404   26322.046475\n",
-       "3  20190405   25660.612372\n",
-       "4  20190406   26409.734375\n",
-       "5  20190407   26122.430857\n",
-       "6  20190408   30415.483159"
-      ]
-     },
-     "execution_count": 20,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
-   "source": [
-    "result = pd.concat([ Date, prediction], axis=1)\n",
-    "result"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 21,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "result.to_csv(\"submission.csv\", index=False)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.7.1"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.feature_selection import f_regression
+
+
+# In[2]:
+
+
+df = pd.read_csv("data/training1.csv" , delim_whitespace=True, header=None)
+df.head()
+
+
+# In[3]:
+
+
+features =[
+    "date",
+    "TaipeiTemp",
+    "TaoyuanTemp",
+    "TaichungTemp",
+    "TainanTemp",
+    "KaohsingTemp",
+    "vacation"
+]
+
+target= "peak_load(MW)"
+
+
+# In[4]:
+
+
+targets=df[7]
+df.drop(columns=[7], inplace=True)
+df.head()
+
+
+# In[5]:
+
+
+df.columns=features
+df.head()
+
+
+# In[6]:
+
+
+df.drop(columns=["date"], inplace=True)
+df.head()
+
+
+# In[7]:
+
+
+features_vectors=df.values
+
+
+# In[8]:
+
+
+X_train, X_test, Y_train, Y_test= train_test_split(features_vectors, targets ,test_size=0.1,random_state=1)
+
+
+# In[9]:
+
+
+reg=linear_model.LinearRegression()
+reg.fit(X_train, Y_train)
+print("Slope:", reg.coef_[0])
+print("Intercept:", reg.intercept_)
+print("Socre Training: ", reg.score(X_train, Y_train))
+print("Socre Testing: ", reg.score(X_test, Y_test))
+
+
+# In[10]:
+
+
+F_values, p_values =f_regression(X_train ,Y_train)
+print("F values:", F_values)
+print("p values:", p_values)
+
+
+# In[11]:
+
+
+features_and_f_values= list(zip(df.columns,F_values))
+features_and_f_values
+
+
+# In[12]:
+
+
+features_num_seq = range(1, len(features))
+result_test_scores = list()
+result_training_scores = list()
+for num in features_num_seq:
+    num_of_choosen_features = num
+    selected_features = [
+        feature_and_f_value[0]
+        for feature_and_f_value in features_and_f_values[:num_of_choosen_features]
+    ]
+
+    features_vectors = df[selected_features].values
+    X_train, X_test, Y_train, Y_test = train_test_split(features_vectors, targets, test_size=0.1, random_state=1)
+
+    reg = linear_model.LinearRegression()
+    reg.fit(X_train, Y_train)
+
+    result_training_scores.append(reg.score(X_train, Y_train))
+    result_test_scores.append(reg.score(X_test, Y_test))
+
+
+# In[13]:
+
+
+plt.plot(features_num_seq, result_training_scores, marker='o', label='train')
+plt.plot(features_num_seq, result_test_scores, marker='*', label='test')
+
+plt.xticks(features_num_seq)
+plt.legend()
+plt.xlabel('Number of features used')
+plt.ylabel('Score')
+plt.show()
+
+
+# In[14]:
+
+
+df_test=pd.read_csv("data/prediction.csv", delim_whitespace=True, header=None)
+df_test.head()
+
+
+# In[15]:
+
+
+df_test.columns=features
+df_test.head()
+Date=df_test["date"]
+Date
+
+
+# In[16]:
+
+
+df_test.drop(columns=["date"],inplace=True)
+df_test.head()
+
+
+# In[17]:
+
+
+x=df_test.values
+y_te_pred=reg.predict(x)
+print(y_te_pred.shape)
+print(x.shape)
+
+
+# In[18]:
+
+
+df_test
+
+
+# In[19]:
+
+
+prediction = pd.DataFrame(y_te_pred, columns=["peak_load(MW)"])
+prediction
+
+
+# In[20]:
+
+
+result = pd.concat([ Date, prediction], axis=1)
+result
+
+
+# In[21]:
+
+
+result.to_csv("submission.csv", index=False)
+
+
+# In[ ]:
