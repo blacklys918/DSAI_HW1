@@ -20,4 +20,4 @@ homework1
 
 
 https://nbviewer.jupyter.org/github/blacklys918/DSAI_HW1/blob/master/app.ipynb
-https://github.com/blacklys918/DSAI_HW1/blob/master/app.ipynb
+
